@@ -2,6 +2,7 @@ import "./style.css";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { profile, posts, media, projects, type Post } from "./content";
+import { videoCard, videoDetail, mountVideo } from "./video";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const esc = (s: string) =>
@@ -66,10 +67,12 @@ function article(id: string) {
 }
 function gallery(id?: string) {
   const current = media.find((m) => m.id === id);
+  if (id && !current) return missing();
+  if (current?.type === "视频") return videoDetail(current);
   if (current)
-    return `<div class="media-detail"><a class="text-link" href="#/gallery">← 返回影像</a><h1>${esc(current.title)}</h1>${current.type === "视频" ? `<video controls playsinline preload="metadata" ${current.poster ? `poster="${esc(current.poster)}"` : ""} src="${esc(current.src)}">浏览器不支持视频播放。</video>` : `<button class="image-open" aria-label="放大 ${esc(current.title)}"><img src="${esc(current.src)}" alt="${esc(current.title)}"></button>`}<p class="muted">${current.date} · ${esc(current.note)}</p></div>`;
+    return `<div class="media-detail"><a class="text-link" href="#/gallery">← 返回影像</a><h1>${esc(current.title)}</h1><button class="image-open" aria-label="放大 ${esc(current.title)}"><img src="${esc(current.src)}" alt="${esc(current.title)}"></button><p class="muted">${current.date} · ${esc(current.note)}</p></div>`;
   const selection = media.filter((m) => filter === "全部" || m.type === filter);
-  return `${heading("VISUAL DIARY", "影像", "把一些瞬间，留在这里。")}<div class="filters">${["全部", "图片", "视频"].map((t) => `<button class="chip ${filter === t ? "active" : ""}" data-filter="${t}" aria-pressed="${filter === t}">${t}</button>`).join("")}</div><div class="gallery-grid">${selection.length ? selection.map((m) => `<a class="media-card" href="#/gallery/${m.id}"><div class="media-cover"><img src="${esc(m.poster || m.src)}" alt="${esc(m.title)}" loading="lazy">${m.type === "视频" ? '<span class="play-badge">▶</span>' : ""}</div><span class="eyebrow">${m.type} / ${m.date}</span><h3>${esc(m.title)} <span>↗</span></h3><p>${esc(m.note)}</p></a>`).join("") : '<div class="empty"><h3>第一段视频，还在路上。</h3><p>有值得分享的片段时，会放在这里。</p></div>'}</div>`;
+  return `${heading("VISUAL DIARY", "影像", "把一些瞬间，留在这里。")}<div class="filters">${["全部", "图片", "视频"].map((t) => `<button class="chip ${filter === t ? "active" : ""}" data-filter="${t}" aria-pressed="${filter === t}">${t}</button>`).join("")}</div><div class="gallery-grid">${selection.length ? selection.map((m) => `<a class="media-card" href="#/gallery/${m.id}">${m.type === "视频" ? videoCard(m) : `<div class="media-cover"><img src="${esc(m.src)}" alt="${esc(m.title)}" loading="lazy"></div>`}<span class="eyebrow">${m.type} / ${m.date}</span><h3>${esc(m.title)} <span>↗</span></h3><p>${esc(m.note)}</p></a>`).join("") : '<div class="empty"><h3>第一段视频，还在路上。</h3><p>有值得分享的片段时，会放在这里。</p></div>'}</div>`;
 }
 function lab() {
   return `${heading("PLAYGROUND", "实验室", "把好奇心，变成能摸到的小作品。")}<div class="project-grid">${projects.map(projectCard).join("")}</div><p class="section-footnote">这里的两个小作品是首版示例，可直接体验。</p>`;
@@ -120,7 +123,7 @@ function render(preserveFocus = false) {
       ? posts.find((p) => p.id === parts[1])?.title
       : route === "project"
         ? projects.find((p) => p.id === parts[1])?.title
-        : undefined;
+        : route === "gallery" ? media.find(m => m.id === parts[1])?.title : undefined;
   document.title = `${detailTitle || names[route] || "未找到"} · ${profile.name} 的个人空间`;
   app.innerHTML = `<header class="site-header"><a class="brand" href="#/" aria-label="Layman 首页"><span class="brand-mark">L<i></i></span><span>${profile.name}<small>的个人空间</small></span></a><nav aria-label="主导航">${Object.entries(
     {
@@ -148,6 +151,7 @@ function render(preserveFocus = false) {
     b.textContent = icon(dark ? "sun" : "moon");
     b.setAttribute("aria-label", dark ? "切换浅色模式" : "切换深色模式");
   });
+  if (route === "gallery") cleanup = mountVideo();
   if (route === "post") {
     const headings = [
       ...document.querySelectorAll<HTMLElement>(".prose h2, .prose h3"),

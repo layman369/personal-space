@@ -62,6 +62,7 @@ export interface Media {
   type: "图片" | "视频";
   src: string;
   poster?: string;
+  duration?: string;
   date: string;
   note: string;
   tags: string[];
@@ -75,6 +76,44 @@ export const media: Media[] = [
     date: "2026-09-14",
     note: "AI 生成的示例影像，用于展示相册效果。",
     tags: ["风景", "示例"],
+  },
+  {
+    id: "CQCW1780",
+    title: "老照片",
+    type: "图片",
+    src: "./images/CQCW1780.JPG",
+    date: "2026-09-14",
+    note: "小时候的我。",
+    tags: ["人物", "老照片"],
+  },
+    {
+    id: "XCMO3161",
+    title: "老照片",
+    type: "图片",
+    src: "./images/XCMO3161.JPG",
+    date: "2026-09-14",
+    note: "小时候的我。",
+    tags: ["人物", "老照片"],
+  },
+    {
+    id: "IMG_1700",
+    title: "当下的我",
+    type: "图片",
+    src: "./images/IMG_1700.JPG",
+    date: "2026-09-14",
+    note: "当下的我",
+    tags: ["人物", "我"],
+  },
+    {
+    id: "IMG_1730",
+    title: "小猫咪",
+    type: "视频",
+    src: "./videos/IMG_1730-web.mp4",
+    poster: "./images/IMG_1730-poster.jpg",
+    duration: "0:05",
+    date: "2026-09-14",
+    note: "小猫咪",
+    tags: ["小猫咪"],
   },
 ];
 export const projects = [
