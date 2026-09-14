@@ -47,11 +47,11 @@ function render(preserveFocus=false) {
 function startMemory(){
   const symbols=['✳','☀','☾','◆','●','✿'];let deck=[...symbols,...symbols];for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
   let open:number[]=[];let matched=new Set<number>();let moves=0;let pending:ReturnType<typeof setTimeout>|undefined;
-  const board=document.querySelector('#memory-board')!;const status=document.querySelector('#game-status')!;
+  const board=document.querySelector('#memory-board')!;const status=document.querySelector('#game-status')!;status.textContent='找出 6 对相同图案';
   board.innerHTML=deck.map((_,i)=>`<button class="memory-tile" data-index="${i}" aria-label="翻开第 ${i+1} 张卡片"><span>?</span></button>`).join('');
   const buttons=[...board.querySelectorAll<HTMLButtonElement>('button')];
   buttons.forEach((b,i)=>b.addEventListener('click',()=>{if(open.length===2||open.includes(i)||matched.has(i))return;open.push(i);b.textContent=deck[i];b.classList.add('flipped');b.setAttribute('aria-label',`第 ${i+1} 张：${deck[i]}`);if(open.length===2){moves++;const[a,c]=open;if(deck[a]===deck[c]){matched.add(a);matched.add(c);for(const index of open){buttons[index].classList.add('matched');buttons[index].disabled=true;}open=[];}else{pending=setTimeout(()=>{open.forEach(index=>{buttons[index].textContent='?';buttons[index].classList.remove('flipped');buttons[index].setAttribute('aria-label',`翻开第 ${index+1} 张卡片`);});open=[];},850);}status.textContent=matched.size===12?`完成！用了 ${moves} 次配对。`:`${matched.size/2} / 6 对 · ${moves} 次尝试`;}}));
-  document.querySelector('#restart')!.addEventListener('click',()=>{if(pending)clearTimeout(pending);startMemory();});cleanup=()=>{if(pending)clearTimeout(pending);};
+  document.querySelector<HTMLButtonElement>('#restart')!.onclick=()=>{if(pending)clearTimeout(pending);startMemory();};cleanup=()=>{if(pending)clearTimeout(pending);};
 }
 function startTimer(){let remaining=25*60;let end=0;let running=false;const timer=document.querySelector('#timer')!;const toggle=document.querySelector('#timer-toggle')!;const status=document.querySelector('#timer-status')!;
   const update=()=>{if(running)remaining=Math.max(0,Math.ceil((end-Date.now())/1000));timer.textContent=`${Math.floor(remaining/60).toString().padStart(2,'0')}:${(remaining%60).toString().padStart(2,'0')}`;if(running&&remaining===0){running=false;toggle.textContent='再来一轮';status.textContent='这一轮完成了，休息一下吧。';}};
