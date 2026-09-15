@@ -1,8 +1,16 @@
 import "./style.css";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { profile, posts, media, projects, type Post } from "./content";
+import {
+  profile,
+  posts,
+  media,
+  projects,
+  featured,
+  type Post,
+} from "./content";
 import { videoCard, videoDetail, mountVideo } from "./video";
+import { mountMusicControl, musicControl } from "./music";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const esc = (s: string) =>
@@ -39,7 +47,14 @@ function projectCard(p: (typeof projects)[number]) {
   return `<a class="project-card" href="#/project/${p.id}"><div class="project-art ${p.id}">${p.id === "memory" ? '<div class="mini-tiles"><i>✳</i><i>●</i><i>●</i><i>✳</i></div>' : '<span class="clock-art">25<span>:00</span></span>'}<span class="art-label">${p.category} / 0${projects.indexOf(p) + 1}</span></div><div class="project-copy"><div class="project-heading"><h3>${p.title}</h3><span>↗</span></div><p>${p.description}</p><div class="tags">${tags(p.tags)}</div></div></a>`;
 }
 function home() {
-  return `<section class="hero"><div class="hero-copy"><span class="eyebrow">A SMALL CORNER OF THE INTERNET</span><h1>你好，我是 <span>${profile.name}<i>✳</i></span></h1><p class="intro">${profile.intro.replace("\n", "<br>")}</p><a class="button" href="#/journal">随便逛逛 <span>↗</span></a><div class="now"><span class="now-label">此刻</span>${profile.status}</div></div><a class="hero-photo" href="#/gallery/coast"><img src="./images/coast.jpg" alt="蓝色海岸旁的安静公路，AI 示例影像" fetchpriority="high"><div class="photo-caption"><span>一些生活的切片</span><span>01 / AI 示例 ↗</span></div><span class="photo-stamp">慢慢来，也没关系。</span></a></section><section>${sectionTitle("HANDPICKED", "值得停留的片刻")}<div class="featured"><a class="featured-story" href="#/post/hello-world"><span class="eyebrow">置顶文章 / 示例</span><h2>给自己的想法，<br>留一个位置。</h2><p>一些文字，一些照片，还有一些尚未完成的小作品。这个空间从这里开始。</p><span class="text-link">读这篇文章 ↗</span><span class="story-decoration" aria-hidden="true">“</span></a><div class="featured-side"><a class="thought-card" href="#/post/small-things"><span class="eyebrow">随手记 / 示例</span><p>不必等到完成，<br>才开始记录。</p><span class="muted">草稿也有自己的生命。 ↗</span></a><a class="lab-teaser" href="#/lab"><span class="eyebrow">我的实验室</span><div><h3>想法，也可以被玩到。</h3><span class="circle-arrow">↗</span></div><p>游戏、小工具，以及正在发生的尝试。</p></a></div></div></section><section class="updates"><div>${sectionTitle("LATEST NOTES", "最近更新", "#/journal")}${posts.slice(0, 3).map(postRow).join("")}</div><aside class="side-note"><span class="eyebrow">ABOUT THIS SPACE</span><span class="asterisk">✳</span><h3>保持好奇，<br>持续生长。</h3><p>文字、影像、代码。<br>用不同的方式，<br>留下思考和创造的痕迹。</p><a class="text-link" href="#/about">关于这个空间 ↗</a></aside></section><section>${sectionTitle("PLAY & MAKE", "做一点有趣的东西", "#/lab")}<div class="project-grid">${projects.map(projectCard).join("")}</div></section>`;
+  const photo = media.find((m) => m.id === featured.photoId);
+  const story = posts.find((p) => p.id === featured.postId);
+  const thought = posts.find((p) => p.id === featured.thoughtId);
+  if (!photo || !story || !thought) return missing();
+  const intro = esc(profile.intro).replaceAll("\n", "<br>");
+  const storyTitle = esc(story.title).replace("，", "，<br>");
+  const thoughtTitle = esc(thought.title).replace("，", "，<br>");
+  return `<section class="hero"><div class="hero-copy"><span class="eyebrow">A SMALL CORNER OF THE INTERNET</span><h1>你好，我是 <span>${profile.name}<i>✳</i></span></h1><p class="intro">${intro}</p><a class="button" href="#/journal">随便逛逛 <span>↗</span></a><div class="now"><span class="now-label">此刻</span>${esc(profile.status)}</div></div><a class="hero-photo" href="#/gallery/${photo.id}"><img src="${esc(photo.src)}" alt="${esc(photo.title)}，${esc(photo.note)}" fetchpriority="high"><div class="photo-caption"><span>一些生活的切片</span><span>01 / ${esc(photo.title)} ↗</span></div><span class="photo-stamp">慢慢来，也没关系。</span></a></section><section>${sectionTitle("HANDPICKED", "值得停留的片刻")}<div class="featured"><a class="featured-story" href="#/post/${story.id}"><span class="eyebrow">置顶文章</span><h2>${storyTitle}</h2><p>${esc(story.excerpt)}</p><span class="text-link">读这篇文章 ↗</span><span class="story-decoration" aria-hidden="true">“</span></a><div class="featured-side"><a class="thought-card" href="#/post/${thought.id}"><span class="eyebrow">随手记</span><p>${thoughtTitle}</p><span class="muted">草稿也有自己的生命。 ↗</span></a><a class="lab-teaser" href="#/lab"><span class="eyebrow">我的实验室</span><div><h3>想法，也可以被玩到。</h3><span class="circle-arrow">↗</span></div><p>游戏、小工具，以及正在发生的尝试。</p></a></div></div></section><section class="updates"><div>${sectionTitle("LATEST NOTES", "最近更新", "#/journal")}${posts.slice(0, 3).map(postRow).join("")}</div><aside class="side-note"><span class="eyebrow">ABOUT THIS SPACE</span><span class="asterisk">✳</span><h3>保持好奇，<br>持续生长。</h3><p>文字、影像、代码。<br>用不同的方式，<br>留下思考和创造的痕迹。</p><a class="text-link" href="#/about">关于这个空间 ↗</a></aside></section><section>${sectionTitle("PLAY & MAKE", "做一点有趣的东西", "#/lab")}<div class="project-grid">${projects.map(projectCard).join("")}</div></section>`;
 }
 function heading(kicker: string, title: string, subtitle: string) {
   return `<header class="page-heading"><span class="eyebrow">${kicker}</span><h1>${title}<span class="accent-dot">.</span></h1><p>${subtitle}</p></header>`;
@@ -83,7 +98,7 @@ function project(id: string) {
   return `<a class="text-link" href="#/lab">← 返回实验室</a>${heading(`${p.category} / V${p.version} / 示例作品`, p.title, p.description)}<section class="interactive-stage ${id === "focus" ? "focus-stage" : ""}">${id === "memory" ? `<div class="game-top"><span id="game-status" aria-live="polite">找出 6 对相同图案</span><button class="chip" id="restart">重新开始</button></div><div class="memory-board" id="memory-board"></div>` : `<span class="eyebrow">ONE THING AT A TIME</span><div class="timer" role="timer" aria-label="剩余时间" id="timer">25:00</div><p id="timer-status" aria-live="polite">给一件事，完整的注意力。</p><div class="timer-buttons"><button class="button" id="timer-toggle">开始专注</button><button class="chip" id="timer-reset">重置</button></div>`}</section><div class="project-notes"><h3>使用说明</h3><p>${id === "memory" ? "点击或用键盘选中卡片，每次翻开两张。配对成功的卡片会保留，找到全部 6 对即可完成。" : "点击开始，进行 25 分钟专注。支持暂停和重置；计时在后台标签页中仍按实际时间计算。离开本工具会结束本次计时。"}</p><h3>更新记录</h3><p>v1.0.0 · 首次发布，可在桌面和手机浏览器中体验。</p></div>`;
 }
 function about() {
-  return `${heading("HELLO, AGAIN", "关于", "很高兴在这里遇见你。")}<div class="about-layout"><div class="about-avatar">L<span>✳</span></div><div class="prose"><h2>我是 ${profile.name}。</h2><p>${profile.about}</p><p>这个空间会慢慢长成自己的样子。现在的部分文字、影像和作品是首版示例，之后会陆续换成真实的记录。</p><h3>在这里可以找到</h3><p>文字里的思考，照片里的瞬间，以及代码里有趣的尝试。</p><a class="button" href="${profile.github}" target="_blank" rel="noopener noreferrer">在 GitHub 找到我 ↗</a></div></div>`;
+  return `${heading("HELLO, AGAIN", "关于", "很高兴在这里遇见你。")}<div class="about-layout"><div class="about-avatar">L<span>✳</span></div><div class="prose"><h2>我是 ${profile.name}。</h2><p>${profile.about}</p><p>影像已经换成生活里的片段。实验室里的两个小工具，仍是可以打开玩的试验。</p><h3>在这里可以找到</h3><p>文字里的思考，照片里的瞬间，以及代码里有趣的尝试。</p><a class="button" href="${profile.github}" target="_blank" rel="noopener noreferrer">在 GitHub 找到我 ↗</a></div></div>`;
 }
 function missing() {
   return `<div class="empty"><span class="eyebrow">404</span><h1>这个角落还没有内容。</h1><a class="button" href="#/">回到首页</a></div>`;
@@ -112,12 +127,12 @@ function render(preserveFocus = false) {
           : route === "gallery"
             ? gallery(parts[1])
             : route === "lab"
-              ? lab()
-              : route === "project"
-                ? project(parts[1])
-                : route === "about"
-                  ? about()
-                  : missing();
+                ? lab()
+                : route === "project"
+                  ? project(parts[1])
+                  : route === "about"
+                    ? about()
+                    : missing();
   const detailTitle =
     route === "post"
       ? posts.find((p) => p.id === parts[1])?.title
@@ -140,16 +155,51 @@ function render(preserveFocus = false) {
     )
     .join(
       "",
-    )}</nav><button class="theme-button" aria-label="${dark ? "切换浅色模式" : "切换深色模式"}" title="切换主题">${icon(dark ? "sun" : "moon")}</button></header><main id="main" tabindex="-1">${main}</main><footer class="site-footer"><div><a class="brand footer-brand" href="#/">${profile.name}<span>✳</span></a><p>一个不断生长的个人空间。</p></div><div class="footer-links"><a href="#/journal">记录</a><a href="#/lab">实验室</a><a href="${profile.github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><small>© ${new Date().getFullYear()} ${profile.name}</small></div></footer><dialog id="lightbox" aria-label="图片大图"><button class="lightbox-close" aria-label="关闭大图">×</button><img alt=""></dialog>`;
-  document.querySelector(".theme-button")!.addEventListener("click", () => {
-    dark = !dark;
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    try {
-      localStorage.setItem("theme", dark ? "dark" : "light");
-    } catch {}
-    const b = document.querySelector(".theme-button")!;
-    b.textContent = icon(dark ? "sun" : "moon");
-    b.setAttribute("aria-label", dark ? "切换浅色模式" : "切换深色模式");
+    )}</nav><div class="header-actions">${musicControl()}<button class="theme-button" aria-label="${dark ? "切换浅色模式" : "切换深色模式"}" title="切换主题">${icon(dark ? "sun" : "moon")}</button></div></header><main id="main" tabindex="-1">${main}</main><footer class="site-footer"><div><a class="brand footer-brand" href="#/">${profile.name}<span>✳</span></a><p>一个不断生长的个人空间。</p></div><div class="footer-links"><a href="#/journal">记录</a><a href="#/lab">实验室</a><a href="${profile.github}" target="_blank" rel="noopener noreferrer">GitHub ↗</a><small>© ${new Date().getFullYear()} ${profile.name}</small></div></footer><dialog id="lightbox" aria-label="图片大图"><button class="lightbox-close" aria-label="关闭大图">×</button><img alt=""></dialog>`;
+  mountMusicControl();
+  document.querySelector<HTMLButtonElement>(".theme-button")!.addEventListener("click", async (event) => {
+    const button = event.currentTarget as HTMLButtonElement;
+    const bounds = button.getBoundingClientRect();
+    const x = bounds.left + bounds.width / 2;
+    const y = bounds.top + bounds.height / 2;
+    const radius = Math.hypot(
+      Math.max(x, innerWidth - x),
+      Math.max(y, innerHeight - y),
+    );
+    const applyTheme = () => {
+      dark = !dark;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+      try {
+        localStorage.setItem("theme", dark ? "dark" : "light");
+      } catch {}
+      button.textContent = icon(dark ? "sun" : "moon");
+      button.setAttribute("aria-label", dark ? "切换浅色模式" : "切换深色模式");
+    };
+    const transitionDocument = document as Document & {
+      startViewTransition?: (update: () => void) => { ready: Promise<void> };
+    };
+    if (
+      !transitionDocument.startViewTransition ||
+      matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      applyTheme();
+      return;
+    }
+    const transition = transitionDocument.startViewTransition(applyTheme);
+    await transition.ready;
+    document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${radius}px at ${x}px ${y}px)`,
+        ],
+      },
+      {
+        duration: 680,
+        easing: "cubic-bezier(.2,.72,.2,1)",
+        pseudoElement: "::view-transition-new(root)",
+      },
+    );
   });
   if (route === "gallery") cleanup = mountVideo();
   if (route === "post") {

@@ -19,6 +19,17 @@
 body {
   margin: 0;
 }
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
 a {
   color: inherit;
   text-decoration: none;
@@ -879,6 +890,172 @@ dialog img {
 .site-footer a:hover {
   color: var(--blue);
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.music-visualizer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 20;
+  filter: saturate(1.35) contrast(1.08);
+}
+.global-music {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  z-index: 5;
+}
+.global-music::after {
+  content: "";
+  position: absolute;
+  top: 36px;
+  right: 0;
+  width: 278px;
+  height: 14px;
+}
+.cd-button {
+  width: 42px;
+  height: 42px;
+  padding: 3px;
+  border-radius: 50%;
+  background: transparent;
+  position: relative;
+  z-index: 4;
+}
+.cd-disc {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(from 30deg, #202421, #78817b, #181b19, #aeb5b0, #202421);
+  box-shadow: inset 0 0 0 1px #fff5, 0 2px 8px #0002;
+}
+.cd-disc::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0 3px #f5f4ef;
+}
+.cd-disc i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+}
+.global-music.is-playing .cd-disc {
+  animation: cd-spin 3s linear infinite;
+}
+.music-controls {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  top: 44px;
+  width: 278px;
+  min-height: 82px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translateY(-6px) scale(.98);
+  white-space: nowrap;
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 16px 45px #1114, inset 0 1px #fff8;
+  padding: 13px 14px;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+}
+.global-music:hover .music-controls,
+.global-music:focus-within .music-controls {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+.music-title {
+  display: block;
+  max-width: 138px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+  color: var(--ink);
+  font-size: .8rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.music-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.music-meta {
+  min-width: 0;
+}
+.music-kicker {
+  display: block;
+  color: var(--blue);
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+  margin-bottom: 6px;
+}
+.music-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.music-controls button {
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  transition: background .16s ease, color .16s ease, transform .16s ease;
+}
+.music-controls button:hover:not(:disabled) {
+  background: var(--soft);
+  color: var(--blue);
+  transform: translateY(-1px);
+}
+.music-controls button.music-toggle {
+  width: 38px;
+  height: 38px;
+  padding: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 0 5px 14px #0003;
+}
+.music-controls button.music-toggle:hover:not(:disabled) {
+  background: var(--blue);
+  color: #fff;
+}
+.music-controls svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+.music-controls button:disabled,
+.global-music.is-empty .cd-button {
+  opacity: .48;
+}
+@keyframes cd-spin {
+  to { transform: rotate(360deg); }
+}
 [data-theme="dark"] {
   --bg: #191d1c;
   --surface: #222826;
@@ -955,6 +1132,13 @@ dialog img {
   }
 }
 @media (max-width: 640px) {
+  .header-actions {
+    margin-left: auto;
+  }
+  .global-music:hover .music-controls,
+  .global-music:focus-within .music-controls {
+    width: min(278px, calc(100vw - 40px));
+  }
   main {
     padding: 0 20px;
   }
@@ -1144,6 +1328,9 @@ dialog img {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .music-visualizer {
+    display: none;
+  }
   *,
   *::before,
   *::after {

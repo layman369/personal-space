@@ -16,5 +16,3 @@ article {
   line-height: 1.9;
 }
 ```
-
-> 本文是用于展示 Markdown 阅读效果的示例。

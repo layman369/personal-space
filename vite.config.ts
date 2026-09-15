@@ -9,7 +9,7 @@ export default defineConfig({ base: "./", build: { copyPublicDir: false }, plugi
   apply: 'build',
   generateBundle() {
     const publicRoot=resolve('public');
-    const assets=new Set(['favicon.svg','images/coast.jpg']);
+    const assets=new Set(['favicon.svg']);
     const source=ts.createSourceFile('content.ts',readFileSync('src/content.ts','utf8'),ts.ScriptTarget.Latest,true);
     const visit=(node:ts.Node)=>{
       if(ts.isPropertyAssignment(node) && ['src','poster'].includes(node.name.getText(source)) && ts.isStringLiteral(node.initializer)) {
